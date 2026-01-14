@@ -17,13 +17,12 @@ export default function GigDetails() {
   const [hiringLoading, setHiringLoading] = useState({});
   const [editingBidId, setEditingBidId] = useState(null);
 
-  // Fetch bids
   const fetchBids = async () => {
     try {
       const res = await api.get(`/bids/${id}`);
       setBids(res.data);
-    } catch (err) {
-      toast.error(err.response?.data?.msg || "Failed to fetch bids");
+    } catch {
+      toast.error("Failed to fetch bids");
     }
   };
 
@@ -40,7 +39,6 @@ export default function GigDetails() {
     return () => socket.off("hiredNotification");
   }, [id]);
 
-  // Submit or update bid
   const submitBid = async () => {
     if (!price || !message) {
       setBidError("All fields are required");
@@ -52,95 +50,38 @@ export default function GigDetails() {
       setBidError("");
 
       if (editingBidId) {
-        console.log("Updating bid:", editingBidId); // Debug
         const res = await api.patch(`/bids/${editingBidId}`, { price, message });
-        toast.success("Bid updated successfully");
+        toast.success("Bid updated");
 
         setBids((prev) =>
           prev.map((b) =>
-            b._id === editingBidId
-              ? { ...b, price: res.data.price, message: res.data.message }
-              : b
+            b._id === editingBidId ? { ...b, ...res.data } : b
           )
         );
-
         setEditingBidId(null);
       } else {
         const res = await api.post("/bids", { gigId: id, price, message });
-        toast.success("Bid placed successfully");
-
+        toast.success("Bid placed");
         setBids((prev) => [...prev, res.data]);
       }
 
       setPrice("");
       setMessage("");
-    } catch (err) {
-      console.error(err);
-      setBidError(err.response?.data?.msg || "Failed to submit bid");
+    } catch {
+      setBidError("Failed to submit bid");
     } finally {
       setLoading(false);
     }
   };
 
-  // Hire freelancer
-  const hire = async (bidId) => {
-    setHiringLoading((prev) => ({ ...prev, [bidId]: true }));
-
-    try {
-      await api.patch(`/bids/${bidId}/hire`);
-      socket.emit("hireGig", { bidId, gigId: id });
-      toast.success("Freelancer hired successfully");
-
-      setBids((prev) =>
-        prev.map((b) =>
-          b._id === bidId
-            ? { ...b, status: "hired" }
-            : { ...b, status: b.status === "pending" ? "rejected" : b.status }
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.msg || "Failed to hire freelancer");
-    } finally {
-      setHiringLoading((prev) => ({ ...prev, [bidId]: false }));
-    }
-  };
-
-  // Edit bid
-  const editBid = (bid) => {
-    setPrice(bid.price);
-    setMessage(bid.message);
-    setEditingBidId(bid._id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  // Delete bid
-  const deleteBid = async (bidId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this bid?");
-    if (!confirmDelete) return;
-
-    try {
-      console.log("Deleting bid:", bidId); // Debug
-      await api.delete(`/bids/${bidId}`);
-      toast.success("Bid deleted successfully");
-      setBids((prev) => prev.filter((b) => b._id !== bidId));
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.msg || "Failed to delete bid");
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-4 py-12 overflow-x-hidden">
       <ToastContainer position="top-right" autoClose={3000} />
 
       <motion.h1
-        initial={{ opacity: 0, y: -30 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-4xl md:text-5xl font-extrabold text-center mb-6
-                   text-transparent bg-clip-text bg-gradient-to-r
-                   from-purple-700 to-indigo-600"
+        className="text-4xl font-extrabold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-indigo-600"
       >
         Gig Bids
       </motion.h1>
@@ -149,29 +90,28 @@ export default function GigDetails() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
         className="max-w-xl mx-auto bg-white/90 backdrop-blur-xl
-                   rounded-3xl shadow-2xl border border-purple-200
-                   px-10 py-12 mb-16 overflow-visible relative"
+        rounded-3xl shadow-2xl border border-purple-200
+        px-6 sm:px-10 py-10 mb-16 overflow-hidden box-border"
       >
-        <h2 className="text-2xl font-bold text-center mb-8">
+        <h2 className="text-2xl font-bold text-center mb-6">
           {editingBidId ? "Edit Your Bid" : "Place Your Bid"}
         </h2>
 
         {bidError && (
-          <p className="text-red-500 text-center mb-6 font-medium">{bidError}</p>
+          <p className="text-red-500 text-center mb-4">{bidError}</p>
         )}
 
-        <div className="flex flex-col gap-6 z-10 relative">
+        <div className="flex flex-col gap-6">
           <input
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder="Your bid amount (₹)"
-            className="w-full h-14 px-5 rounded-2xl border-2 border-purple-300
-                       bg-white focus:outline-none focus:ring-2
-                       focus:ring-purple-500 focus:border-purple-500
-                       shadow-md text-lg z-10 relative"
+            className="w-full max-w-full min-w-0 h-14 px-4
+            rounded-2xl border-2 border-purple-300 box-border
+            focus:outline-none focus:ring-2 focus:ring-purple-500
+            focus:ring-offset-0 focus:border-purple-500"
           />
 
           <textarea
@@ -179,19 +119,19 @@ export default function GigDetails() {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Why should you be hired for this gig?"
             rows={4}
-            className="w-full px-5 py-4 rounded-2xl border-2 border-purple-300
-                       bg-white focus:outline-none focus:ring-2
-                       focus:ring-purple-500 focus:border-purple-500
-                       shadow-md text-lg resize-none z-10 relative"
+            className="w-full max-w-full min-w-0 px-4 py-3
+            rounded-2xl border-2 border-purple-300 box-border
+            resize-none focus:outline-none focus:ring-2
+            focus:ring-purple-500 focus:ring-offset-0
+            focus:border-purple-500"
           />
 
           <button
             onClick={submitBid}
             disabled={loading}
-            className="w-full h-14 rounded-2xl font-bold text-white text-lg
-                       bg-gradient-to-r from-purple-600 to-indigo-600
-                       hover:from-purple-700 hover:to-indigo-700
-                       shadow-md hover:shadow-lg transition-all z-10 relative"
+            className="w-full h-14 rounded-2xl font-bold text-white
+            bg-gradient-to-r from-purple-600 to-indigo-600
+            hover:opacity-90 transition-all"
           >
             {loading
               ? "Submitting..."
@@ -204,57 +144,21 @@ export default function GigDetails() {
 
       {/* Bids List */}
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-semibold text-center mb-8">All Bids</h2>
-
-        {bids.length === 0 && (
-          <p className="text-center text-gray-500">No bids yet</p>
-        )}
+        <h2 className="text-3xl font-semibold text-center mb-6">All Bids</h2>
 
         <div className="grid gap-6">
-          {bids.map((b, i) => (
-            <motion.div
+          {bids.map((b) => (
+            <div
               key={b._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07 }}
               className="bg-white rounded-3xl shadow-lg px-6 py-6
-                         flex flex-col md:flex-row justify-between
-                         border-2 border-purple-200 items-start md:items-center"
+              flex flex-col md:flex-row justify-between
+              border border-purple-200"
             >
-              <div className="flex-1 mb-4 md:mb-0">
-                <p className="text-lg font-medium mb-2">{b.message}</p>
+              <div>
+                <p className="font-medium">{b.message}</p>
                 <p className="text-purple-600 font-bold">₹ {b.price}</p>
-                <span className="text-sm capitalize">{b.status}</span>
               </div>
-
-              <div className="flex gap-3 flex-wrap">
-                <button
-                  disabled={b.status !== "pending" || hiringLoading[b._id]}
-                  onClick={() => hire(b._id)}
-                  className={`px-4 py-2 rounded-2xl text-white font-semibold ${
-                    b.status === "pending"
-                      ? "bg-green-600 hover:bg-green-700"
-                      : "bg-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  {hiringLoading[b._id] ? "Hiring..." : "Hire"}
-                </button>
-
-                <button
-                  onClick={() => editBid(b)}
-                  className="px-4 py-2 rounded-2xl bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  Edit
-                </button>
-
-                <button
-                  onClick={() => deleteBid(b._id)}
-                  className="px-4 py-2 rounded-2xl bg-red-600 text-white hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
