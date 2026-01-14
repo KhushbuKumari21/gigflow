@@ -90,22 +90,24 @@ export default function GigDetails() {
     }
   };
 
-  // Edit gig
-  const editGig = () => navigate(`/gigs/${id}/edit`);
+  // Edit bid
+  const editBid = (bid) => {
+    setPrice(bid.price);
+    setMessage(bid.message);
+    window.scrollTo({ top: 0, behavior: "smooth" }); // scroll to top for edit
+  };
 
-  // Delete gig
-  const deleteGig = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this gig?"
-    );
+  // Delete bid
+  const deleteBid = async (bidId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this bid?");
     if (!confirmDelete) return;
 
     try {
-      await api.delete(`/gigs/${id}`);
-      toast.success("Gig deleted successfully");
-      navigate("/dashboard"); // redirect after delete
+      await api.delete(`/bids/${bidId}`);
+      toast.success("Bid deleted successfully");
+      setBids((prev) => prev.filter((b) => b._id !== bidId));
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to delete gig");
+      toast.error(err.response?.data?.message || "Failed to delete bid");
     }
   };
 
@@ -125,23 +127,6 @@ export default function GigDetails() {
         Gig Details & Bids
       </motion.h1>
 
-      {/* Edit/Delete Buttons */}
-      <div className="flex gap-4 justify-end mb-6 max-w-xl mx-auto">
-        <button
-          onClick={editGig}
-          className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Edit Gig
-        </button>
-
-        <button
-          onClick={deleteGig}
-          className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
-        >
-          Delete Gig
-        </button>
-      </div>
-
       {/* Bid Form */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -149,19 +134,17 @@ export default function GigDetails() {
         transition={{ duration: 0.6 }}
         className="max-w-xl mx-auto bg-white/90 backdrop-blur-xl
                    rounded-3xl shadow-2xl border border-purple-200
-                   px-10 py-12 mb-16 overflow-visible"
+                   px-10 py-12 mb-16 overflow-visible relative"
       >
         <h2 className="text-2xl font-bold text-center mb-8">
-          Place Your Bid
+          {price && message ? "Edit Your Bid" : "Place Your Bid"}
         </h2>
 
         {bidError && (
-          <p className="text-red-500 text-center mb-6 font-medium">
-            {bidError}
-          </p>
+          <p className="text-red-500 text-center mb-6 font-medium">{bidError}</p>
         )}
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 z-10 relative">
           <input
             type="number"
             value={price}
@@ -170,7 +153,7 @@ export default function GigDetails() {
             className="w-full h-14 px-5 rounded-2xl border-2 border-purple-300
                        bg-white focus:outline-none focus:ring-2
                        focus:ring-purple-500 focus:border-purple-500
-                       shadow-md text-lg"
+                       shadow-md text-lg z-10 relative"
           />
 
           <textarea
@@ -181,7 +164,7 @@ export default function GigDetails() {
             className="w-full px-5 py-4 rounded-2xl border-2 border-purple-300
                        bg-white focus:outline-none focus:ring-2
                        focus:ring-purple-500 focus:border-purple-500
-                       shadow-md text-lg resize-none"
+                       shadow-md text-lg resize-none z-10 relative"
           />
 
           <button
@@ -190,9 +173,9 @@ export default function GigDetails() {
             className="w-full h-14 rounded-2xl font-bold text-white text-lg
                        bg-gradient-to-r from-purple-600 to-indigo-600
                        hover:from-purple-700 hover:to-indigo-700
-                       shadow-md hover:shadow-lg transition-all"
+                       shadow-md hover:shadow-lg transition-all z-10 relative"
           >
-            {loading ? "Posting..." : "Submit Bid"}
+            {loading ? "Posting..." : price && message ? "Update Bid" : "Submit Bid"}
           </button>
         </div>
       </motion.div>
@@ -214,25 +197,41 @@ export default function GigDetails() {
               transition={{ delay: i * 0.07 }}
               className="bg-white rounded-3xl shadow-lg px-6 py-6
                          flex flex-col md:flex-row justify-between
-                         border-2 border-purple-200"
+                         border-2 border-purple-200 items-start md:items-center"
             >
-              <div className="flex-1">
+              <div className="flex-1 mb-4 md:mb-0">
                 <p className="text-lg font-medium mb-2">{b.message}</p>
                 <p className="text-purple-600 font-bold">₹ {b.price}</p>
                 <span className="text-sm capitalize">{b.status}</span>
               </div>
 
-              <button
-                disabled={b.status !== "pending" || hiringLoading[b._id]}
-                onClick={() => hire(b._id)}
-                className={`px-6 py-2 rounded-2xl text-white font-semibold ${
-                  b.status === "pending"
-                    ? "bg-green-600 hover:bg-green-700"
-                    : "bg-gray-400 cursor-not-allowed"
-                }`}
-              >
-                {hiringLoading[b._id] ? "Hiring..." : "Hire"}
-              </button>
+              <div className="flex gap-3 flex-wrap">
+                <button
+                  disabled={b.status !== "pending" || hiringLoading[b._id]}
+                  onClick={() => hire(b._id)}
+                  className={`px-4 py-2 rounded-2xl text-white font-semibold ${
+                    b.status === "pending"
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  {hiringLoading[b._id] ? "Hiring..." : "Hire"}
+                </button>
+
+                <button
+                  onClick={() => editBid(b)}
+                  className="px-4 py-2 rounded-2xl bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => deleteBid(b._id)}
+                  className="px-4 py-2 rounded-2xl bg-red-600 text-white hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>
