@@ -148,27 +148,24 @@ JWT_SECRET=supersecretkey
 
 ```
 
-git clone https://github.com/KhushbuKumari21/gigflow.git
+git clone https://github.com/KhushbuKumari21/gigflow
 cd gigflow
 
 ```
 
 ### 2️⃣ Backend Setup
-
 ```
-
 cd backend
 npm install
 npm run dev
 
 ```
-
 Backend runs on: **[http://localhost:5000]**
+
 
 ### 3️⃣ Frontend Setup
 
 ```
-
 cd frontend
 npm install
 npm run dev
@@ -178,7 +175,6 @@ npm run dev
 Frontend runs on: **[http://localhost:5173]**
 
 ---
-
 ## 🔌 API Endpoints
 
 ### Auth
