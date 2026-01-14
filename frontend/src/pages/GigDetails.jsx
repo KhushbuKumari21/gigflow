@@ -2,14 +2,9 @@ import api from "../api/axios";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import io from "socket.io-client";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// Socket connection
-const socket = io("http://localhost:5000", {
-  withCredentials: true,
-});
+import { socket } from "../socket";
 
 export default function GigDetails() {
   const { id } = useParams();
