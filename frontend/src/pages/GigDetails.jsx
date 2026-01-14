@@ -102,12 +102,23 @@ export default function GigDetails() {
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-4xl md:text-5xl font-extrabold text-center mb-14
+        className="text-4xl md:text-5xl font-extrabold text-center mb-10
                    text-transparent bg-clip-text bg-gradient-to-r
                    from-purple-700 to-indigo-600"
       >
         Gig Details & Bids
       </motion.h1>
+
+      {/* Edit / Delete Gig UI */}
+      <div className="flex gap-4 justify-end mb-12 max-w-4xl mx-auto">
+        <button className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700">
+          Edit Gig
+        </button>
+
+        <button className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700">
+          Delete Gig
+        </button>
+      </div>
 
       {/* Bid Form */}
       <motion.div
@@ -129,38 +140,32 @@ export default function GigDetails() {
         )}
 
         <div className="flex flex-col gap-6">
-          {/* Bid Amount Input */}
           <input
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder="Your bid amount (₹)"
             className="w-full h-14 px-5 rounded-2xl border-2 border-purple-300
-                       bg-white focus:outline-none focus:ring-2
-                       focus:ring-purple-500 focus:border-purple-500
+                       focus:outline-none focus:ring-2 focus:ring-purple-500
                        shadow-md text-lg"
           />
 
-          {/* Message Textarea */}
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Why should you be hired for this gig?"
             rows={4}
             className="w-full px-5 py-4 rounded-2xl border-2 border-purple-300
-                       bg-white focus:outline-none focus:ring-2
-                       focus:ring-purple-500 focus:border-purple-500
+                       focus:outline-none focus:ring-2 focus:ring-purple-500
                        shadow-md text-lg resize-none"
           />
 
-          {/* Submit Button */}
           <button
             onClick={submitBid}
             disabled={loading}
             className="w-full h-14 rounded-2xl font-bold text-white text-lg
                        bg-gradient-to-r from-purple-600 to-indigo-600
-                       hover:from-purple-700 hover:to-indigo-700
-                       shadow-md hover:shadow-lg transition-all"
+                       hover:from-purple-700 hover:to-indigo-700"
           >
             {loading ? "Posting..." : "Submit Bid"}
           </button>
