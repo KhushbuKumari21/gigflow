@@ -17,7 +17,7 @@ export default function GigDetails() {
   const [hiringLoading, setHiringLoading] = useState({});
   const [editingBidId, setEditingBidId] = useState(null);
 
-  // Fetch bids
+  // Fetch all bids for this gig
   const fetchBids = async () => {
     try {
       const res = await api.get(`/bids/${id}`);
@@ -30,6 +30,7 @@ export default function GigDetails() {
   useEffect(() => {
     fetchBids();
 
+    // Listen for hire notifications
     socket.on("hiredNotification", (data) => {
       if (data.gigId === id) {
         fetchBids();
@@ -54,6 +55,7 @@ export default function GigDetails() {
       if (editingBidId) {
         const res = await api.patch(`/bids/${editingBidId}`, { price, message });
         toast.success("Bid updated successfully");
+
         setBids((prev) =>
           prev.map((b) =>
             b._id === editingBidId
@@ -112,8 +114,7 @@ export default function GigDetails() {
 
   // Delete bid
   const deleteBid = async (bidId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this bid?");
-    if (!confirmDelete) return;
+    if (!window.confirm("Are you sure you want to delete this bid?")) return;
 
     try {
       await api.delete(`/bids/${bidId}`);
@@ -147,7 +148,7 @@ export default function GigDetails() {
         transition={{ duration: 0.6 }}
         className="max-w-xl mx-auto bg-white/90 backdrop-blur-xl
                    rounded-3xl shadow-2xl border border-purple-200
-                   px-6 sm:px-10 py-8 mb-12 overflow-hidden"
+                   px-6 sm:px-10 py-8 mb-12 overflow-visible"
       >
         <h2 className="text-2xl font-bold text-center mb-6">
           {editingBidId ? "Edit Your Bid" : "Place Your Bid"}
