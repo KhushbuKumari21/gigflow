@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import http from "http"; // For Socket.IO
+import http from "http";
 import { Server } from "socket.io";
 import { connectDB } from "./config/db.js";
 
@@ -11,38 +11,36 @@ import gigRoutes from "./routes/gig.routes.js";
 import bidRoutes from "./routes/bid.routes.js";
 
 dotenv.config();
+
+// Connect to database
 connectDB();
 
 const app = express();
 
-// Parse JSON and cookies
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
 // Allowed origins for CORS
 const allowedOrigins = [
-  "http://localhost:5173", // Local dev frontend
-
-  "https://iridescent-starlight-5a23d6.netlify.app/", // Netlify frontend
+  "http://localhost:5173",
+  "https://iridescent-starlight-5a23d6.netlify.app"
 ];
 
-// CORS for HTTP API
-// Enable CORS for allowed origins and send cookies
+// CORS for Express
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like Postman, curl)
       if (!origin) return callback(null, true);
 
-      if (!allowedOrigins.includes(origin)) {
-        return callback(
-          new Error(`CORS policy: The origin ${origin} is not allowed.`),
-          false
-        );
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS policy: The origin ${origin} is not allowed.`), false);
       }
-      // Origin is allowed
-      return callback(null, true);
     },
-    credentials: true, // This allows sending cookies cross-domain
+    credentials: true, // Allow cookies
   })
 );
 
@@ -57,13 +55,13 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins, // only allow these origins
+    origin: allowedOrigins, // Only allow these origins
     methods: ["GET", "POST"],
-    credentials: true, // allow sending cookies cross-domain
+    credentials: true, // Allow cookies
   },
 });
 
-// Make io accessible in controllers if needed
+// Make io accessible in controllers
 app.locals.io = io;
 
 // Socket.IO events
