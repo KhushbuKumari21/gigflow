@@ -39,8 +39,14 @@ export const login = async (req, res) => {
     // Generate JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-    // Send token as HTTP-only cookie
-    res.cookie("token", token, { httpOnly: true }).json(user);
+    // Send token as HTTP-only cookie with cross-domain settings
+    res.cookie("token", token, {
+      httpOnly: true,          // cannot be accessed by JS
+      secure: true,            // only send over HTTPS
+      sameSite: "none",        // allow cross-site requests
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    }).json(user);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Login failed" });

@@ -22,22 +22,26 @@ app.use(cookieParser());
 // Allowed origins for CORS
 const allowedOrigins = [
   "http://localhost:5173", // Local dev frontend
-  "https://iridescent-starlight-5a23d6.netlify.app", // Netlify frontend
+  "https://iridescent-starlight-5a23d6.netlify.app/", // Netlify frontend
 ];
 
 // CORS for HTTP API
+// Enable CORS for allowed origins and send cookies
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like Postman)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg = `CORS policy: The origin ${origin} is not allowed.`;
-        return callback(new Error(msg), false);
+
+      if (!allowedOrigins.includes(origin)) {
+        return callback(
+          new Error(`CORS policy: The origin ${origin} is not allowed.`),
+          false
+        );
       }
+      // Origin is allowed
       return callback(null, true);
     },
-    credentials: true,
+    credentials: true, // This allows sending cookies cross-domain
   })
 );
 
@@ -52,9 +56,9 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: allowedOrigins, // only allow these origins
     methods: ["GET", "POST"],
-    credentials: true,
+    credentials: true, // allow sending cookies cross-domain
   },
 });
 
