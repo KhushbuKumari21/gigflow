@@ -6,7 +6,7 @@ import io from "socket.io-client";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Connect to Socket.IO server
+// Connect to Socket.io server
 const socket = io("http://localhost:5000");
 
 export default function GigDetails() {
@@ -143,25 +143,17 @@ export default function GigDetails() {
             </label>
           </div>
 
-          {/* Message Input */}
-          <div className="relative">
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder=" "
-              rows={1}
-              className="peer w-full h-14 min-h-[56px] px-5 py-3 rounded-2xl border-2 border-purple-300
-                         bg-white/95 focus:bg-white focus:outline-none focus:ring-2
-                         focus:ring-purple-500 focus:border-purple-500 shadow-md
-                         hover:shadow-lg transition-all duration-300 font-medium text-lg resize-none overflow-hidden"
-            />
-            <label
-              className={`absolute left-5 text-gray-400 text-lg transition-all duration-300
-                          ${message ? "-top-3 text-purple-600 text-sm" : "top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-lg"}`}
-            >
-              Why should you be hired for this gig?
-            </label>
-          </div>
+          {/* Message Textarea with placeholder */}
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Why should you be hired for this gig?"
+            rows={3}
+            className="w-full px-5 py-4 rounded-2xl border-2 border-purple-300
+                       bg-white/95 focus:bg-white focus:outline-none focus:ring-2
+                       focus:ring-purple-500 focus:border-purple-500 shadow-md
+                       hover:shadow-lg transition-all duration-300 font-medium text-lg resize-none"
+          />
 
           {/* Submit Button */}
           <button
