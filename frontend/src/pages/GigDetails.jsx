@@ -53,11 +53,7 @@ export default function GigDetails() {
       setLoading(true);
       setBidError("");
 
-      await api.post("/bids", {
-        gigId: id,
-        price,
-        message,
-      });
+      await api.post("/bids", { gigId: id, price, message });
 
       setPrice("");
       setMessage("");
@@ -95,9 +91,7 @@ export default function GigDetails() {
   };
 
   // Edit gig
-  const editGig = () => {
-    navigate(`/gigs/${id}/edit`);
-  };
+  const editGig = () => navigate(`/gigs/${id}/edit`);
 
   // Delete gig
   const deleteGig = async () => {
@@ -155,7 +149,7 @@ export default function GigDetails() {
         transition={{ duration: 0.6 }}
         className="max-w-xl mx-auto bg-white/90 backdrop-blur-xl
                    rounded-3xl shadow-2xl border border-purple-200
-                   px-10 py-12 mb-16"
+                   px-10 py-12 mb-16 overflow-visible"
       >
         <h2 className="text-2xl font-bold text-center mb-8">
           Place Your Bid
