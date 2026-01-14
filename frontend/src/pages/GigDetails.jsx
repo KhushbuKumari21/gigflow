@@ -35,7 +35,7 @@ export default function GigDetails() {
     socket.on("hiredNotification", (data) => {
       if (data.gigId === id) {
         fetchBids();
-        toast.info(`Real-time Notification: ${data.message}`);
+        toast.info(data.message);
       }
     });
 
@@ -92,14 +92,14 @@ export default function GigDetails() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-6 py-12">
       <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Page Title */}
+      {/* Title */}
       <motion.h1
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
+        transition={{ duration: 0.6 }}
         className="text-4xl md:text-5xl font-extrabold text-center mb-14
                    text-transparent bg-clip-text bg-gradient-to-r
-                   from-purple-700 to-indigo-600 drop-shadow-lg"
+                   from-purple-700 to-indigo-600"
       >
         Gig Details & Bids
       </motion.h1>
@@ -124,7 +124,7 @@ export default function GigDetails() {
         )}
 
         <div className="flex flex-col gap-6">
-          {/* Price */}
+          {/* Price - Floating Label */}
           <div className="relative">
             <input
               type="number"
@@ -132,38 +132,55 @@ export default function GigDetails() {
               onChange={(e) => setPrice(e.target.value)}
               placeholder=" "
               className="peer w-full h-14 px-5 rounded-2xl border-2 border-purple-300
-                         focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+                         bg-white focus:outline-none focus:ring-2
+                         focus:ring-purple-500 focus:border-purple-500
                          shadow-md text-lg"
             />
             <label
-              className={`absolute left-5 transition-all duration-300 ${
-                price
-                  ? "-top-3 text-sm text-purple-600"
-                  : "top-1/2 -translate-y-1/2 text-gray-400"
-              }`}
+              className={`absolute left-5 transition-all duration-300
+                ${
+                  price
+                    ? "-top-3 text-sm text-purple-600 bg-white px-1"
+                    : "top-1/2 -translate-y-1/2 text-gray-400 text-lg"
+                }`}
             >
               Your bid amount (₹)
             </label>
           </div>
 
-          {/* Message */}
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Why should you be hired for this gig?"
-            rows={4}
-            className="w-full px-5 pt-4 pb-3 rounded-2xl border-2 border-purple-300
-                       focus:ring-2 focus:ring-purple-500 focus:border-purple-500
-                       shadow-md text-lg resize-none"
-          />
+          {/* Message - Floating Label Textarea */}
+          <div className="relative">
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder=" "
+              rows={4}
+              className="peer w-full px-5 pt-6 pb-3 rounded-2xl border-2
+                         border-purple-300 bg-white focus:outline-none
+                         focus:ring-2 focus:ring-purple-500
+                         focus:border-purple-500 shadow-md
+                         text-lg resize-none"
+            />
+            <label
+              className={`absolute left-5 transition-all duration-300 pointer-events-none
+                ${
+                  message
+                    ? "-top-3 text-sm text-purple-600 bg-white px-1"
+                    : "top-4 text-gray-400 text-lg"
+                }`}
+            >
+              Why should you be hired for this gig?
+            </label>
+          </div>
 
-          {/* Submit */}
+          {/* Submit Button */}
           <button
             onClick={submitBid}
             disabled={loading}
             className="w-full h-14 rounded-2xl font-bold text-white text-lg
                        bg-gradient-to-r from-purple-600 to-indigo-600
-                       hover:from-purple-700 hover:to-indigo-700 transition-all"
+                       hover:from-purple-700 hover:to-indigo-700
+                       shadow-md hover:shadow-lg transition-all"
           >
             {loading ? "Posting..." : "Submit Bid"}
           </button>
@@ -188,8 +205,8 @@ export default function GigDetails() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.07 }}
               className="bg-white rounded-3xl shadow-lg px-6 py-6
-                         flex flex-col md:flex-row justify-between border-2
-                         border-purple-200"
+                         flex flex-col md:flex-row justify-between
+                         border-2 border-purple-200"
             >
               <div className="flex-1">
                 <p className="text-lg font-medium mb-2">{b.message}</p>
