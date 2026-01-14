@@ -76,3 +76,42 @@ export const hireBid = async (req, res) => {
     session.endSession();
   }
 };
+
+// UPDATE BID → Only bid owner can update
+export const updateBid = async (req, res) => {
+  try {
+    const bid = await Bid.findById(req.params.bidId);
+    if (!bid) return res.status(404).json({ msg: "Bid not found" });
+
+    // Only bid owner can update
+    if (bid.freelancerId.toString() !== req.user.id)
+      return res.status(403).json({ msg: "Unauthorized" });
+
+    bid.price = req.body.price || bid.price;
+    bid.message = req.body.message || bid.message;
+
+    await bid.save();
+    res.json(bid);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Failed to update bid" });
+  }
+};
+
+// DELETE BID → Only bid owner can delete
+export const deleteBid = async (req, res) => {
+  try {
+    const bid = await Bid.findById(req.params.bidId);
+    if (!bid) return res.status(404).json({ msg: "Bid not found" });
+
+    // Only bid owner can delete
+    if (bid.freelancerId.toString() !== req.user.id)
+      return res.status(403).json({ msg: "Unauthorized" });
+
+    await bid.deleteOne();
+    res.json({ msg: "Bid deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Failed to delete bid" });
+  }
+};
