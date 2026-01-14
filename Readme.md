@@ -41,7 +41,7 @@ This project fully satisfies the **Full Stack Development Internship Assignment*
 
 - View all bids for a gig (only gig owner)
 
-### 🧑‍💼  Logic
+### 🧑‍💼 Logic
 
 - Client can hire **only one freelancer** per gig
 - On hire:
@@ -155,6 +155,7 @@ cd gigflow
 
 ### 2️⃣ Backend Setup
 ```
+
 cd backend
 npm install
 npm run dev
@@ -166,6 +167,7 @@ Backend runs on: **[http://localhost:5000]**
 ### 3️⃣ Frontend Setup
 
 ```
+
 cd frontend
 npm install
 npm run dev
@@ -190,9 +192,11 @@ Frontend runs on: **[http://localhost:5173]**
 
 ### Bids
 
-* `POST /api/bids`
-* `GET /api/bids/:gigId`
-* `PATCH /api/bids/:bidId/hire`
+* `POST /api/bids` – Place a new bid
+* `GET /api/bids/:gigId` – Get all bids for a gig (only gig owner)
+* `PATCH /api/bids/:bidId` – Update a bid (only bid owner)
+* `DELETE /api/bids/:bidId` – Delete a bid (only bid owner)
+* `PATCH /api/bids/:bidId/hire` – Hire a freelancer (only gig owner)
 
 ---
 ## 👩‍💻 Author
@@ -200,3 +204,5 @@ Frontend runs on: **[http://localhost:5173]**
 **Khushbu Kumari**
 Full Stack Developer
 
+```
+# Hosting Link : https://iridescent-starlight-5a23d6.netlify.app/
