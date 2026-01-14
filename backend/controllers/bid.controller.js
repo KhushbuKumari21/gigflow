@@ -2,13 +2,16 @@ import mongoose from "mongoose";
 import Bid from "../models/Bid.js";
 import Gig from "../models/Gig.js";
 
-// CREATE BID
+/* =========================
+   CREATE BID
+========================= */
 export const createBid = async (req, res) => {
   try {
     const bid = await Bid.create({
       ...req.body,
       freelancerId: req.user.id,
     });
+
     res.status(201).json(bid);
   } catch (err) {
     console.error(err);
@@ -16,28 +19,40 @@ export const createBid = async (req, res) => {
   }
 };
 
-// GET BIDS FOR A GIG → ONLY OWNER CAN ACCESS
+/* =========================
+   GET BIDS FOR A GIG
+    Owner → all bids
+    Freelancer → own bid
+========================= */
 export const getBidsForGig = async (req, res) => {
   try {
     const { gigId } = req.params;
 
-    // Find the gig
     const gig = await Gig.findById(gigId);
     if (!gig) return res.status(404).json({ msg: "Gig not found" });
 
-    // Access control: Only gig owner can see bids
-    if (gig.ownerId.toString() !== req.user.id)
-      return res.status(403).json({ msg: "Unauthorized access" });
+    // Gig Owner → see all bids
+    if (gig.ownerId.toString() === req.user.id) {
+      const bids = await Bid.find({ gigId });
+      return res.json(bids);
+    }
 
-    const bids = await Bid.find({ gigId });
-    res.json(bids);
+    //  Freelancer → see only their bid
+    const myBid = await Bid.findOne({
+      gigId,
+      freelancerId: req.user.id,
+    });
+
+    return res.json(myBid ? [myBid] : []);
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Failed to fetch bids" });
   }
 };
 
-// HIRE BID (TRANSACTIONAL)
+/* =========================
+   HIRE BID (TRANSACTION)
+========================= */
 export const hireBid = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -53,16 +68,20 @@ export const hireBid = async (req, res) => {
     if (gig.ownerId.toString() !== req.user.id)
       throw new Error("Unauthorized action");
 
-    if (gig.status === "assigned") throw new Error("Already hired");
+    if (gig.status === "assigned")
+      throw new Error("Gig already assigned");
 
-    // Reject all other bids
-    await Bid.updateMany({ gigId: gig._id }, { status: "rejected" }, { session });
+    // Reject all bids
+    await Bid.updateMany(
+      { gigId: gig._id },
+      { status: "rejected" },
+      { session }
+    );
 
-    // Hire the selected bid
+    // Hire selected bid
     bid.status = "hired";
     await bid.save({ session });
 
-    // Update gig status
     gig.status = "assigned";
     await gig.save({ session });
 
@@ -71,24 +90,25 @@ export const hireBid = async (req, res) => {
   } catch (err) {
     await session.abortTransaction();
     console.error(err);
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ msg: err.message });
   } finally {
     session.endSession();
   }
 };
 
-// UPDATE BID → Only bid owner can update
+/* =========================
+   UPDATE BID
+========================= */
 export const updateBid = async (req, res) => {
   try {
     const bid = await Bid.findById(req.params.bidId);
     if (!bid) return res.status(404).json({ msg: "Bid not found" });
 
-    // Only bid owner can update
     if (bid.freelancerId.toString() !== req.user.id)
       return res.status(403).json({ msg: "Unauthorized" });
 
-    bid.price = req.body.price || bid.price;
-    bid.message = req.body.message || bid.message;
+    bid.price = req.body.price ?? bid.price;
+    bid.message = req.body.message ?? bid.message;
 
     await bid.save();
     res.json(bid);
@@ -98,13 +118,14 @@ export const updateBid = async (req, res) => {
   }
 };
 
-// DELETE BID → Only bid owner can delete
+/* =========================
+   DELETE BID
+========================= */
 export const deleteBid = async (req, res) => {
   try {
     const bid = await Bid.findById(req.params.bidId);
     if (!bid) return res.status(404).json({ msg: "Bid not found" });
 
-    // Only bid owner can delete
     if (bid.freelancerId.toString() !== req.user.id)
       return res.status(403).json({ msg: "Unauthorized" });
 
