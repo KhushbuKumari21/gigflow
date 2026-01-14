@@ -16,6 +16,7 @@ export default function GigDetails() {
   const [loading, setLoading] = useState(false);
   const [bidError, setBidError] = useState("");
   const [hiringLoading, setHiringLoading] = useState({});
+  const [editingBidId, setEditingBidId] = useState(null);
 
   // Fetch bids
   const fetchBids = async () => {
@@ -42,7 +43,7 @@ export default function GigDetails() {
     };
   }, [id]);
 
-  // Submit bid
+  // Submit or update bid
   const submitBid = async () => {
     if (!price || !message) {
       setBidError("All fields are required");
@@ -53,14 +54,22 @@ export default function GigDetails() {
       setLoading(true);
       setBidError("");
 
-      await api.post("/bids", { gigId: id, price, message });
+      if (editingBidId) {
+        // Update bid
+        await api.patch(`/bids/${editingBidId}`, { price, message });
+        toast.success("Bid updated successfully");
+        setEditingBidId(null);
+      } else {
+        // New bid
+        await api.post("/bids", { gigId: id, price, message });
+        toast.success("Bid placed successfully");
+      }
 
       setPrice("");
       setMessage("");
-      toast.success("Bid placed successfully");
       fetchBids();
     } catch (err) {
-      setBidError(err.response?.data?.message || "Failed to place bid");
+      setBidError(err.response?.data?.message || "Failed to submit bid");
     } finally {
       setLoading(false);
     }
@@ -73,7 +82,6 @@ export default function GigDetails() {
     try {
       await api.patch(`/bids/${bidId}/hire`);
       socket.emit("hireGig", { bidId, gigId: id });
-
       toast.success("Freelancer hired successfully");
 
       setBids((prev) =>
@@ -94,7 +102,8 @@ export default function GigDetails() {
   const editBid = (bid) => {
     setPrice(bid.price);
     setMessage(bid.message);
-    window.scrollTo({ top: 0, behavior: "smooth" }); // scroll to top for edit
+    setEditingBidId(bid._id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Delete bid
@@ -108,6 +117,21 @@ export default function GigDetails() {
       setBids((prev) => prev.filter((b) => b._id !== bidId));
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to delete bid");
+    }
+  };
+
+  // Edit/Delete Gig
+  const editGig = () => navigate(`/gigs/${id}/edit`);
+  const deleteGig = async () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this gig?");
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(`/gigs/${id}`);
+      toast.success("Gig deleted successfully");
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete gig");
     }
   };
 
@@ -127,6 +151,23 @@ export default function GigDetails() {
         Gig Details & Bids
       </motion.h1>
 
+      {/* Edit/Delete Gig */}
+      <div className="flex gap-4 justify-end mb-6 max-w-xl mx-auto">
+        <button
+          onClick={editGig}
+          className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Edit Gig
+        </button>
+
+        <button
+          onClick={deleteGig}
+          className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
+        >
+          Delete Gig
+        </button>
+      </div>
+
       {/* Bid Form */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -137,7 +178,7 @@ export default function GigDetails() {
                    px-10 py-12 mb-16 overflow-visible relative"
       >
         <h2 className="text-2xl font-bold text-center mb-8">
-          {price && message ? "Edit Your Bid" : "Place Your Bid"}
+          {editingBidId ? "Edit Your Bid" : "Place Your Bid"}
         </h2>
 
         {bidError && (
@@ -175,7 +216,7 @@ export default function GigDetails() {
                        hover:from-purple-700 hover:to-indigo-700
                        shadow-md hover:shadow-lg transition-all z-10 relative"
           >
-            {loading ? "Posting..." : price && message ? "Update Bid" : "Submit Bid"}
+            {loading ? "Submitting..." : editingBidId ? "Update Bid" : "Submit Bid"}
           </button>
         </div>
       </motion.div>
