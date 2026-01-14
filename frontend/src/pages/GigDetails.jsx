@@ -38,9 +38,7 @@ export default function GigDetails() {
       }
     });
 
-    return () => {
-      socket.off("hiredNotification");
-    };
+    return () => socket.off("hiredNotification");
   }, [id]);
 
   // Submit or update bid
@@ -55,19 +53,28 @@ export default function GigDetails() {
       setBidError("");
 
       if (editingBidId) {
-        // Update bid
-        await api.patch(`/bids/${editingBidId}`, { price, message });
+        // UPDATE existing bid
+        const res = await api.patch(`/bids/${editingBidId}`, { price, message });
         toast.success("Bid updated successfully");
+
+        // Update state directly instead of creating new
+        setBids((prev) =>
+          prev.map((b) =>
+            b._id === editingBidId ? { ...b, price: res.data.price, message: res.data.message } : b
+          )
+        );
+
         setEditingBidId(null);
       } else {
-        // New bid
-        await api.post("/bids", { gigId: id, price, message });
+        // CREATE new bid
+        const res = await api.post("/bids", { gigId: id, price, message });
         toast.success("Bid placed successfully");
+
+        setBids((prev) => [...prev, res.data]);
       }
 
       setPrice("");
       setMessage("");
-      fetchBids();
     } catch (err) {
       setBidError(err.response?.data?.message || "Failed to submit bid");
     } finally {
@@ -216,7 +223,11 @@ export default function GigDetails() {
                        hover:from-purple-700 hover:to-indigo-700
                        shadow-md hover:shadow-lg transition-all z-10 relative"
           >
-            {loading ? "Submitting..." : editingBidId ? "Update Bid" : "Submit Bid"}
+            {loading
+              ? "Submitting..."
+              : editingBidId
+              ? "Update Bid"
+              : "Submit Bid"}
           </button>
         </div>
       </motion.div>
