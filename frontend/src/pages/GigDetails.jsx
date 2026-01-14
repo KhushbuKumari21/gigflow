@@ -6,11 +6,12 @@ import io from "socket.io-client";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Connect to Socket.io server
+// Socket connection
 const socket = io("http://localhost:5000");
 
 export default function GigDetails() {
   const { id } = useParams();
+
   const [bids, setBids] = useState([]);
   const [price, setPrice] = useState("");
   const [message, setMessage] = useState("");
@@ -24,7 +25,6 @@ export default function GigDetails() {
       const res = await api.get(`/bids/${id}`);
       setBids(res.data);
     } catch (err) {
-      console.error("Failed to fetch bids:", err);
       toast.error(err.response?.data?.message || "Failed to fetch bids");
     }
   };
@@ -32,7 +32,6 @@ export default function GigDetails() {
   useEffect(() => {
     fetchBids();
 
-    // Real-time notifications
     socket.on("hiredNotification", (data) => {
       if (data.gigId === id) {
         fetchBids();
@@ -43,12 +42,13 @@ export default function GigDetails() {
     return () => socket.off("hiredNotification");
   }, [id]);
 
-  // Submit a new bid
+  // Submit bid
   const submitBid = async () => {
     if (!price || !message) {
       setBidError("All fields are required");
       return;
     }
+
     try {
       setLoading(true);
       setBidError("");
@@ -67,9 +67,11 @@ export default function GigDetails() {
   // Hire freelancer
   const hire = async (bidId) => {
     setHiringLoading((prev) => ({ ...prev, [bidId]: true }));
+
     try {
       await api.patch(`/bids/${bidId}/hire`);
       socket.emit("hireGig", { bidId, gigId: id });
+
       toast.success("Freelancer hired successfully");
 
       setBids((prev) =>
@@ -96,8 +98,8 @@ export default function GigDetails() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
         className="text-4xl md:text-5xl font-extrabold text-center mb-14
-                   text-transparent bg-clip-text
-                   bg-gradient-to-r from-purple-700 to-indigo-600 drop-shadow-lg"
+                   text-transparent bg-clip-text bg-gradient-to-r
+                   from-purple-700 to-indigo-600 drop-shadow-lg"
       >
         Gig Details & Bids
       </motion.h1>
@@ -109,61 +111,59 @@ export default function GigDetails() {
         transition={{ duration: 0.6 }}
         className="max-w-xl mx-auto bg-white/90 backdrop-blur-xl
                    rounded-3xl shadow-2xl border border-purple-200
-                   px-10 py-12 mb-16 hover:shadow-purple-400 transition-all duration-500"
+                   px-10 py-12 mb-16"
       >
-        <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center tracking-wide">
+        <h2 className="text-2xl font-bold text-center mb-8">
           Place Your Bid
         </h2>
 
         {bidError && (
-          <p className="text-red-500 text-center mb-6 font-medium animate-shake">
+          <p className="text-red-500 text-center mb-6 font-medium">
             {bidError}
           </p>
         )}
 
-        {/* Inputs & Button */}
         <div className="flex flex-col gap-6">
-          {/* Price Input */}
+          {/* Price */}
           <div className="relative">
             <input
               type="number"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder=" "
-              className="peer w-full h-14 min-h-[56px] px-5 rounded-2xl border-2 border-purple-300
-                         bg-white/95 focus:bg-white focus:outline-none focus:ring-2
-                         focus:ring-purple-500 focus:border-purple-500 shadow-md
-                         hover:shadow-lg transition-all duration-300 font-medium text-lg"
+              className="peer w-full h-14 px-5 rounded-2xl border-2 border-purple-300
+                         focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+                         shadow-md text-lg"
             />
             <label
-              className={`absolute left-5 text-gray-400 text-lg transition-all duration-300
-                          ${price ? "-top-3 text-purple-600 text-sm" : "top-1/2 -translate-y-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-lg"}`}
+              className={`absolute left-5 transition-all duration-300 ${
+                price
+                  ? "-top-3 text-sm text-purple-600"
+                  : "top-1/2 -translate-y-1/2 text-gray-400"
+              }`}
             >
               Your bid amount (₹)
             </label>
           </div>
 
-          {/* Message Textarea with placeholder */}
+          {/* Message */}
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Why should you be hired for this gig?"
-            rows={3}
-            className="w-full px-5 py-4 rounded-2xl border-2 border-purple-300
-                       bg-white/95 focus:bg-white focus:outline-none focus:ring-2
-                       focus:ring-purple-500 focus:border-purple-500 shadow-md
-                       hover:shadow-lg transition-all duration-300 font-medium text-lg resize-none"
+            rows={4}
+            className="w-full px-5 pt-4 pb-3 rounded-2xl border-2 border-purple-300
+                       focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+                       shadow-md text-lg resize-none"
           />
 
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             onClick={submitBid}
             disabled={loading}
             className="w-full h-14 rounded-2xl font-bold text-white text-lg
                        bg-gradient-to-r from-purple-600 to-indigo-600
-                       hover:from-purple-700 hover:to-indigo-700
-                       shadow-md hover:shadow-lg transform hover:-translate-y-0.5
-                       transition-all duration-300"
+                       hover:from-purple-700 hover:to-indigo-700 transition-all"
           >
             {loading ? "Posting..." : "Submit Bid"}
           </button>
@@ -172,14 +172,12 @@ export default function GigDetails() {
 
       {/* Bids List */}
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-semibold text-gray-800 mb-8 text-center">
+        <h2 className="text-3xl font-semibold text-center mb-8">
           All Bids
         </h2>
 
         {bids.length === 0 && (
-          <p className="text-gray-500 text-center text-lg animate-pulse">
-            No bids yet
-          </p>
+          <p className="text-center text-gray-500">No bids yet</p>
         )}
 
         <div className="grid gap-6">
@@ -189,40 +187,24 @@ export default function GigDetails() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.07 }}
-              className="bg-white rounded-3xl shadow-lg hover:shadow-2xl
-                         px-6 py-6 flex flex-col md:flex-row justify-between
-                         items-stretch transition-all duration-300 border-2 border-purple-200 hover:border-purple-400 min-h-[120px]"
+              className="bg-white rounded-3xl shadow-lg px-6 py-6
+                         flex flex-col md:flex-row justify-between border-2
+                         border-purple-200"
             >
-              <div className="flex-1 mb-4 md:mb-0 max-w-md overflow-hidden">
-                <p className="font-medium text-gray-800 mb-2 text-lg line-clamp-4">
-                  {b.message}
-                </p>
-                <p className="text-purple-600 font-bold text-lg mb-1">₹ {b.price}</p>
-                {b.freelancerName && (
-                  <p className="text-gray-500 mb-2 text-sm">Freelancer: {b.freelancerName}</p>
-                )}
-                <span
-                  className={`inline-block px-4 py-1.5 text-xs md:text-sm font-semibold rounded-full shadow-sm ${
-                    b.status === "pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : b.status === "hired"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {b.status}
-                </span>
+              <div className="flex-1">
+                <p className="text-lg font-medium mb-2">{b.message}</p>
+                <p className="text-purple-600 font-bold">₹ {b.price}</p>
+                <span className="text-sm capitalize">{b.status}</span>
               </div>
 
               <button
                 disabled={b.status !== "pending" || hiringLoading[b._id]}
                 onClick={() => hire(b._id)}
-                className={`px-6 py-2 rounded-2xl font-semibold text-white
-                            transition-all duration-300 ${
-                              b.status === "pending"
-                                ? "bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transform hover:-translate-y-1"
-                                : "bg-gray-400 cursor-not-allowed"
-                            }`}
+                className={`px-6 py-2 rounded-2xl text-white font-semibold ${
+                  b.status === "pending"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-gray-400 cursor-not-allowed"
+                }`}
               >
                 {hiringLoading[b._id] ? "Hiring..." : "Hire"}
               </button>
