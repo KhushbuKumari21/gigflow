@@ -2,6 +2,8 @@ import api from "../api/axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function PostGig() {
   const navigate = useNavigate();
@@ -17,11 +19,21 @@ export default function PostGig() {
 
     try {
       setLoading(true);
-      await api.post("/gigs", gig);
+      const res = await api.post("/gigs", gig);
       toast.success("Gig posted successfully!");
+
+      // Clear form
+      setGig({ title: "", description: "", budget: "" });
+
+      // Navigate to homepage or gigs list
       navigate("/");
+
+      // Optionally, you can pass new gig as state to home page
+      // navigate("/", { state: { newGig: res.data } });
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to post gig");
+      console.error(err);
+      setError(err.response?.data?.msg || "Failed to post gig");
+      toast.error(err.response?.data?.msg || "Failed to post gig");
     } finally {
       setLoading(false);
     }
@@ -29,6 +41,7 @@ export default function PostGig() {
 
   return (
     <div className="min-h-screen flex items-start justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-4 pt-12">
+      <ToastContainer position="top-right" autoClose={3000} />
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -65,7 +78,9 @@ export default function PostGig() {
           onClick={submit}
           disabled={loading}
           className={`w-full h-14 rounded-xl text-white font-bold text-lg transition-all duration-200 ${
-            loading ? "bg-purple-300 cursor-not-allowed" : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 hover:shadow-lg"
+            loading
+              ? "bg-purple-300 cursor-not-allowed"
+              : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 hover:shadow-lg"
           }`}
         >
           {loading ? "Posting..." : "Post Gig"}
