@@ -21,6 +21,7 @@ app.use(cookieParser());
 
 // Allowed origins for CORS
 const allowedOrigins = [
+  "http://localhost:5173", // Local dev frontend
 
   "https://iridescent-starlight-5a23d6.netlify.app/", // Netlify frontend
 ];
