@@ -7,7 +7,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Socket connection
-const socket = io("http://localhost:5000");
+const socket = io("http://localhost:5000", {
+  withCredentials: true,
+});
 
 export default function GigDetails() {
   const { id } = useParams();
@@ -39,7 +41,9 @@ export default function GigDetails() {
       }
     });
 
-    return () => socket.off("hiredNotification");
+    return () => {
+      socket.off("hiredNotification");
+    };
   }, [id]);
 
   // Submit bid
@@ -52,7 +56,13 @@ export default function GigDetails() {
     try {
       setLoading(true);
       setBidError("");
-      await api.post("/bids", { gigId: id, price, message });
+
+      await api.post("/bids", {
+        gigId: id,
+        price,
+        message,
+      });
+
       setPrice("");
       setMessage("");
       toast.success("Bid placed successfully");
@@ -124,54 +134,29 @@ export default function GigDetails() {
         )}
 
         <div className="flex flex-col gap-6">
-          {/* Price - Floating Label */}
-          <div className="relative">
-            <input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder=" "
-              className="peer w-full h-14 px-5 rounded-2xl border-2 border-purple-300
-                         bg-white focus:outline-none focus:ring-2
-                         focus:ring-purple-500 focus:border-purple-500
-                         shadow-md text-lg"
-            />
-            <label
-              className={`absolute left-5 transition-all duration-300
-                ${
-                  price
-                    ? "-top-3 text-sm text-purple-600 bg-white px-1"
-                    : "top-1/2 -translate-y-1/2 text-gray-400 text-lg"
-                }`}
-            >
-              Your bid amount (₹)
-            </label>
-          </div>
+          {/* Bid Amount Input */}
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Your bid amount (₹)"
+            className="w-full h-14 px-5 rounded-2xl border-2 border-purple-300
+                       bg-white focus:outline-none focus:ring-2
+                       focus:ring-purple-500 focus:border-purple-500
+                       shadow-md text-lg"
+          />
 
-          {/* Message - Floating Label Textarea */}
-          <div className="relative">
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder=" "
-              rows={4}
-              className="peer w-full px-5 pt-6 pb-3 rounded-2xl border-2
-                         border-purple-300 bg-white focus:outline-none
-                         focus:ring-2 focus:ring-purple-500
-                         focus:border-purple-500 shadow-md
-                         text-lg resize-none"
-            />
-            <label
-              className={`absolute left-5 transition-all duration-300 pointer-events-none
-                ${
-                  message
-                    ? "-top-3 text-sm text-purple-600 bg-white px-1"
-                    : "top-4 text-gray-400 text-lg"
-                }`}
-            >
-              Why should you be hired for this gig?
-            </label>
-          </div>
+          {/* Message Textarea */}
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Why should you be hired for this gig?"
+            rows={4}
+            className="w-full px-5 py-4 rounded-2xl border-2 border-purple-300
+                       bg-white focus:outline-none focus:ring-2
+                       focus:ring-purple-500 focus:border-purple-500
+                       shadow-md text-lg resize-none"
+          />
 
           {/* Submit Button */}
           <button
