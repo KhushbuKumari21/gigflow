@@ -12,7 +12,9 @@ export default function Gigs() {
   const fetchGigs = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/gigs?search=${search}`, { withCredentials: true });
+      const res = await api.get(`/gigs?search=${search}`, {
+        withCredentials: true,
+      });
       setGigs(res.data);
     } catch (err) {
       console.error(err);
@@ -25,22 +27,20 @@ export default function Gigs() {
     fetchGigs();
   }, [search]);
 
-  // Function to add new gig instantly
-  const addGigToList = (newGig) => {
-    setGigs((prev) => [newGig, ...prev]);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-6 py-16">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-6 py-16">
+      {/* Heading */}
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
-        className="text-4xl md:text-5xl font-extrabold text-center mb-16 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700"
+        className="text-4xl md:text-5xl font-extrabold text-center mb-16
+        text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700"
       >
         Discover Freelance Gigs
       </motion.h1>
 
+      {/* Search Input */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -50,14 +50,39 @@ export default function Gigs() {
         <input
           type="text"
           placeholder="Search by title, skill, or keyword"
+          value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full h-14 px-6 rounded-full border border-gray-300 bg-white shadow-lg placeholder-gray-400 text-gray-700 font-medium text-lg focus:outline-none focus:ring-2 focus:ring-purple-500 hover:shadow-2xl transition-all duration-300 box-border"
+          className="
+            w-full max-w-full min-w-0
+            h-14 px-6
+            rounded-full
+            border-2 border-gray-300
+            bg-white
+            text-gray-700 font-medium text-lg
+            placeholder-gray-400
+            box-border
+            focus:outline-none
+            focus:border-purple-600
+            focus:shadow-[0_0_0_2px_rgba(147,51,234,0.25)]
+            transition-all duration-300
+          "
         />
       </motion.div>
 
-      {loading && <p className="text-center text-gray-500 animate-pulse text-lg">Loading gigs...</p>}
-      {!loading && gigs.length === 0 && <p className="text-center text-gray-500 text-lg">No gigs found</p>}
+      {/* Loading / Empty */}
+      {loading && (
+        <p className="text-center text-gray-500 animate-pulse text-lg">
+          Loading gigs...
+        </p>
+      )}
 
+      {!loading && gigs.length === 0 && (
+        <p className="text-center text-gray-500 text-lg">
+          No gigs found
+        </p>
+      )}
+
+      {/* Gigs Grid */}
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {gigs.map((g, i) => (
           <motion.div
@@ -67,20 +92,33 @@ export default function Gigs() {
             transition={{ delay: i * 0.05 }}
           >
             <Link to={`/gig/${g._id}`}>
-              <div className="group relative bg-white rounded-3xl p-6 h-full shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+              <div
+                className="
+                  group relative
+                  bg-white rounded-3xl p-6 h-full
+                  border border-gray-100
+                  shadow-lg hover:shadow-2xl
+                  overflow-hidden
+                  transition-all duration-300
+                  transform hover:-translate-y-1 hover:scale-[1.02]
+                "
+              >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-25 transition-all duration-300 bg-gradient-to-br from-purple-100 via-transparent to-indigo-100 rounded-3xl"></div>
+
                 <div className="relative z-10 flex flex-col h-full">
-                  <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-2 group-hover:text-purple-700 transition-all duration-300">
+                  <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-2 group-hover:text-purple-700 transition">
                     {g.title}
                   </h2>
+
                   <p className="text-gray-600 text-sm md:text-base line-clamp-3 mb-4">
                     {g.description}
                   </p>
+
                   <div className="mt-auto flex items-center justify-between">
                     <span className="text-purple-600 font-bold text-lg md:text-xl">
                       ₹ {g.budget}
                     </span>
-                    <span className="px-3 py-1.5 text-xs md:text-sm font-semibold text-green-700 bg-green-100 rounded-full shadow-sm">
+                    <span className="px-3 py-1.5 text-xs md:text-sm font-semibold text-green-700 bg-green-100 rounded-full">
                       Open
                     </span>
                   </div>

@@ -78,10 +78,13 @@ export default function GigDetails() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-4 py-12 overflow-x-hidden">
       <ToastContainer position="top-right" autoClose={3000} />
 
+      {/* Title */}
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-4xl font-extrabold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-indigo-600"
+        className="text-4xl font-extrabold text-center mb-8
+        text-transparent bg-clip-text bg-gradient-to-r
+        from-purple-700 to-indigo-600"
       >
         Gig Bids
       </motion.h1>
@@ -99,10 +102,13 @@ export default function GigDetails() {
         </h2>
 
         {bidError && (
-          <p className="text-red-500 text-center mb-4">{bidError}</p>
+          <p className="text-red-500 text-center mb-4 font-medium">
+            {bidError}
+          </p>
         )}
 
         <div className="flex flex-col gap-6">
+          {/* Price Input */}
           <input
             type="number"
             value={price}
@@ -110,26 +116,27 @@ export default function GigDetails() {
             placeholder="Your bid amount (₹)"
             className="w-full max-w-full min-w-0 h-14 px-4
             rounded-2xl border-2 border-purple-300 box-border
-            focus:outline-none focus:ring-2 focus:ring-purple-500
-            focus:ring-offset-0 focus:border-purple-500"
+            focus:outline-none focus:border-purple-600
+            focus:shadow-[0_0_0_2px_rgba(147,51,234,0.2)]"
           />
 
+          {/* Message */}
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Why should you be hired for this gig?"
             rows={4}
             className="w-full max-w-full min-w-0 px-4 py-3
-            rounded-2xl border-2 border-purple-300 box-border
-            resize-none focus:outline-none focus:ring-2
-            focus:ring-purple-500 focus:ring-offset-0
-            focus:border-purple-500"
+            rounded-2xl border-2 border-purple-300 box-border resize-none
+            focus:outline-none focus:border-purple-600
+            focus:shadow-[0_0_0_2px_rgba(147,51,234,0.2)]"
           />
 
+          {/* Submit */}
           <button
             onClick={submitBid}
             disabled={loading}
-            className="w-full h-14 rounded-2xl font-bold text-white
+            className="w-full h-14 rounded-2xl font-bold text-white text-lg
             bg-gradient-to-r from-purple-600 to-indigo-600
             hover:opacity-90 transition-all"
           >
@@ -144,7 +151,13 @@ export default function GigDetails() {
 
       {/* Bids List */}
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-semibold text-center mb-6">All Bids</h2>
+        <h2 className="text-3xl font-semibold text-center mb-6">
+          All Bids
+        </h2>
+
+        {bids.length === 0 && (
+          <p className="text-center text-gray-500">No bids yet</p>
+        )}
 
         <div className="grid gap-6">
           {bids.map((b) => (
@@ -155,8 +168,10 @@ export default function GigDetails() {
               border border-purple-200"
             >
               <div>
-                <p className="font-medium">{b.message}</p>
-                <p className="text-purple-600 font-bold">₹ {b.price}</p>
+                <p className="font-medium mb-1">{b.message}</p>
+                <p className="text-purple-600 font-bold">
+                  ₹ {b.price}
+                </p>
               </div>
             </div>
           ))}
