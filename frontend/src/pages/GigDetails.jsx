@@ -57,7 +57,9 @@ export default function GigDetails() {
 
         setBids((prev) =>
           prev.map((b) =>
-            b._id === editingBidId ? { ...b, price: res.data.price, message: res.data.message } : b
+            b._id === editingBidId
+              ? { ...b, price: res.data.price, message: res.data.message }
+              : b
           )
         );
 
