@@ -8,17 +8,30 @@ export default function Gigs() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  // Fetch gigs
+  const fetchGigs = async () => {
     setLoading(true);
-    api
-      .get(`/gigs?search=${search}`)
-      .then((res) => setGigs(res.data))
-      .finally(() => setLoading(false));
+    try {
+      const res = await api.get(`/gigs?search=${search}`, { withCredentials: true });
+      setGigs(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGigs();
   }, [search]);
+
+  // Function to add new gig instantly
+  const addGigToList = (newGig) => {
+    setGigs((prev) => [newGig, ...prev]);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-6 py-16">
-      {/* Heading */}
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -28,7 +41,6 @@ export default function Gigs() {
         Discover Freelance Gigs
       </motion.h1>
 
-      {/* Search */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -43,15 +55,9 @@ export default function Gigs() {
         />
       </motion.div>
 
-      {/* Loading / Empty */}
-      {loading && (
-        <p className="text-center text-gray-500 animate-pulse text-lg">Loading gigs...</p>
-      )}
-      {!loading && gigs.length === 0 && (
-        <p className="text-center text-gray-500 text-lg">No gigs found</p>
-      )}
+      {loading && <p className="text-center text-gray-500 animate-pulse text-lg">Loading gigs...</p>}
+      {!loading && gigs.length === 0 && <p className="text-center text-gray-500 text-lg">No gigs found</p>}
 
-      {/* Gig Cards */}
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {gigs.map((g, i) => (
           <motion.div
@@ -62,9 +68,7 @@ export default function Gigs() {
           >
             <Link to={`/gig/${g._id}`}>
               <div className="group relative bg-white rounded-3xl p-6 h-full shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
-                {/* Hover Glow */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-25 transition-all duration-300 bg-gradient-to-br from-purple-100 via-transparent to-indigo-100 rounded-3xl"></div>
-
                 <div className="relative z-10 flex flex-col h-full">
                   <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-2 group-hover:text-purple-700 transition-all duration-300">
                     {g.title}

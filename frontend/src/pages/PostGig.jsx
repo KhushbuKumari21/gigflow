@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function PostGig() {
+export default function PostGig({ addGigToList }) {
   const navigate = useNavigate();
   const [gig, setGig] = useState({ title: "", description: "", budget: "" });
   const [loading, setLoading] = useState(false);
@@ -19,17 +19,22 @@ export default function PostGig() {
 
     try {
       setLoading(true);
-      const res = await api.post("/gigs", gig);
+
+      // Convert budget to Number
+      const payload = { ...gig, budget: Number(gig.budget) };
+
+      const res = await api.post("/gigs", payload, { withCredentials: true });
+
       toast.success("Gig posted successfully!");
 
       // Clear form
       setGig({ title: "", description: "", budget: "" });
 
-      // Navigate to homepage or gigs list
-      navigate("/");
+      // Add gig to homepage list instantly (if parent passes function)
+      if (addGigToList) addGigToList(res.data);
 
-      // Optionally, you can pass new gig as state to home page
-      // navigate("/", { state: { newGig: res.data } });
+      // Navigate to gigs page
+      navigate("/gigs");
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.msg || "Failed to post gig");
