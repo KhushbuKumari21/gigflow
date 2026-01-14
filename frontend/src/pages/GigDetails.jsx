@@ -23,7 +23,7 @@ export default function GigDetails() {
       const res = await api.get(`/bids/${id}`);
       setBids(res.data);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to fetch bids");
+      toast.error(err.response?.data?.msg || "Failed to fetch bids");
     }
   };
 
@@ -52,6 +52,7 @@ export default function GigDetails() {
       setBidError("");
 
       if (editingBidId) {
+        console.log("Updating bid:", editingBidId); // Debug
         const res = await api.patch(`/bids/${editingBidId}`, { price, message });
         toast.success("Bid updated successfully");
 
@@ -74,7 +75,8 @@ export default function GigDetails() {
       setPrice("");
       setMessage("");
     } catch (err) {
-      setBidError(err.response?.data?.message || "Failed to submit bid");
+      console.error(err);
+      setBidError(err.response?.data?.msg || "Failed to submit bid");
     } finally {
       setLoading(false);
     }
@@ -97,7 +99,8 @@ export default function GigDetails() {
         )
       );
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to hire freelancer");
+      console.error(err);
+      toast.error(err.response?.data?.msg || "Failed to hire freelancer");
     } finally {
       setHiringLoading((prev) => ({ ...prev, [bidId]: false }));
     }
@@ -117,11 +120,13 @@ export default function GigDetails() {
     if (!confirmDelete) return;
 
     try {
+      console.log("Deleting bid:", bidId); // Debug
       await api.delete(`/bids/${bidId}`);
       toast.success("Bid deleted successfully");
       setBids((prev) => prev.filter((b) => b._id !== bidId));
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to delete bid");
+      console.error(err);
+      toast.error(err.response?.data?.msg || "Failed to delete bid");
     }
   };
 
@@ -129,7 +134,6 @@ export default function GigDetails() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-6 py-12">
       <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Title */}
       <motion.h1
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
