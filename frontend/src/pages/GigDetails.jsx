@@ -1,5 +1,5 @@
 import api from "../api/axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
@@ -8,6 +8,7 @@ import { socket } from "../socket";
 
 export default function GigDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [bids, setBids] = useState([]);
   const [price, setPrice] = useState("");
@@ -93,6 +94,27 @@ export default function GigDetails() {
     }
   };
 
+  // Edit gig
+  const editGig = () => {
+    navigate(`/gigs/${id}/edit`);
+  };
+
+  // Delete gig
+  const deleteGig = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this gig?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(`/gigs/${id}`);
+      toast.success("Gig deleted successfully");
+      navigate("/dashboard"); // redirect after delete
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete gig");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-6 py-12">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -102,20 +124,26 @@ export default function GigDetails() {
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-4xl md:text-5xl font-extrabold text-center mb-10
+        className="text-4xl md:text-5xl font-extrabold text-center mb-6
                    text-transparent bg-clip-text bg-gradient-to-r
                    from-purple-700 to-indigo-600"
       >
         Gig Details & Bids
       </motion.h1>
 
-      {/* Edit / Delete Gig UI */}
-      <div className="flex gap-4 justify-end mb-12 max-w-4xl mx-auto">
-        <button className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700">
+      {/* Edit/Delete Buttons */}
+      <div className="flex gap-4 justify-end mb-6 max-w-xl mx-auto">
+        <button
+          onClick={editGig}
+          className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+        >
           Edit Gig
         </button>
 
-        <button className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700">
+        <button
+          onClick={deleteGig}
+          className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
+        >
           Delete Gig
         </button>
       </div>
@@ -146,7 +174,8 @@ export default function GigDetails() {
             onChange={(e) => setPrice(e.target.value)}
             placeholder="Your bid amount (₹)"
             className="w-full h-14 px-5 rounded-2xl border-2 border-purple-300
-                       focus:outline-none focus:ring-2 focus:ring-purple-500
+                       bg-white focus:outline-none focus:ring-2
+                       focus:ring-purple-500 focus:border-purple-500
                        shadow-md text-lg"
           />
 
@@ -156,7 +185,8 @@ export default function GigDetails() {
             placeholder="Why should you be hired for this gig?"
             rows={4}
             className="w-full px-5 py-4 rounded-2xl border-2 border-purple-300
-                       focus:outline-none focus:ring-2 focus:ring-purple-500
+                       bg-white focus:outline-none focus:ring-2
+                       focus:ring-purple-500 focus:border-purple-500
                        shadow-md text-lg resize-none"
           />
 
@@ -165,7 +195,8 @@ export default function GigDetails() {
             disabled={loading}
             className="w-full h-14 rounded-2xl font-bold text-white text-lg
                        bg-gradient-to-r from-purple-600 to-indigo-600
-                       hover:from-purple-700 hover:to-indigo-700"
+                       hover:from-purple-700 hover:to-indigo-700
+                       shadow-md hover:shadow-lg transition-all"
           >
             {loading ? "Posting..." : "Submit Bid"}
           </button>
@@ -174,9 +205,7 @@ export default function GigDetails() {
 
       {/* Bids List */}
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-semibold text-center mb-8">
-          All Bids
-        </h2>
+        <h2 className="text-3xl font-semibold text-center mb-8">All Bids</h2>
 
         {bids.length === 0 && (
           <p className="text-center text-gray-500">No bids yet</p>
