@@ -1,5 +1,5 @@
 import api from "../api/axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
@@ -8,7 +8,6 @@ import { socket } from "../socket";
 
 export default function GigDetails() {
   const { id } = useParams();
-  const navigate = useNavigate();
 
   const [bids, setBids] = useState([]);
   const [price, setPrice] = useState("");
@@ -53,11 +52,9 @@ export default function GigDetails() {
       setBidError("");
 
       if (editingBidId) {
-        // UPDATE existing bid
         const res = await api.patch(`/bids/${editingBidId}`, { price, message });
         toast.success("Bid updated successfully");
 
-        // Update state directly instead of creating new
         setBids((prev) =>
           prev.map((b) =>
             b._id === editingBidId ? { ...b, price: res.data.price, message: res.data.message } : b
@@ -66,7 +63,6 @@ export default function GigDetails() {
 
         setEditingBidId(null);
       } else {
-        // CREATE new bid
         const res = await api.post("/bids", { gigId: id, price, message });
         toast.success("Bid placed successfully");
 
@@ -127,21 +123,6 @@ export default function GigDetails() {
     }
   };
 
-  // Edit/Delete Gig
-  const editGig = () => navigate(`/gigs/${id}/edit`);
-  const deleteGig = async () => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this gig?");
-    if (!confirmDelete) return;
-
-    try {
-      await api.delete(`/gigs/${id}`);
-      toast.success("Gig deleted successfully");
-      navigate("/dashboard");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to delete gig");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-6 py-12">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -155,25 +136,8 @@ export default function GigDetails() {
                    text-transparent bg-clip-text bg-gradient-to-r
                    from-purple-700 to-indigo-600"
       >
-        Gig Details & Bids
+        Gig Bids
       </motion.h1>
-
-      {/* Edit/Delete Gig */}
-      <div className="flex gap-4 justify-end mb-6 max-w-xl mx-auto">
-        <button
-          onClick={editGig}
-          className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Edit Gig
-        </button>
-
-        <button
-          onClick={deleteGig}
-          className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
-        >
-          Delete Gig
-        </button>
-      </div>
 
       {/* Bid Form */}
       <motion.div
