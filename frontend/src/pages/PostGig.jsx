@@ -20,20 +20,13 @@ export default function PostGig({ addGigToList }) {
     try {
       setLoading(true);
 
-      // Convert budget to Number
       const payload = { ...gig, budget: Number(gig.budget) };
-
       const res = await api.post("/gigs", payload, { withCredentials: true });
 
       toast.success("Gig posted successfully!");
-
-      // Clear form
       setGig({ title: "", description: "", budget: "" });
 
-      // Add gig to homepage list instantly (if parent passes function)
       if (addGigToList) addGigToList(res.data);
-
-      // Navigate to gigs page
       navigate("/gigs");
     } catch (err) {
       console.error(err);
@@ -45,44 +38,63 @@ export default function PostGig({ addGigToList }) {
   };
 
   return (
-    <div className="min-h-screen flex items-start justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-4 pt-12">
+    <div className="min-h-screen flex items-start justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-white px-4 pt-12 box-border overflow-x-hidden">
       <ToastContainer position="top-right" autoClose={3000} />
+
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-white/90 backdrop-blur-md w-full max-w-lg rounded-3xl shadow-2xl border border-purple-200 px-6 sm:px-12 py-10 flex flex-col gap-6"
+        className="bg-white/90 backdrop-blur-md w-full max-w-lg rounded-3xl shadow-2xl border border-purple-200 px-6 sm:px-12 py-10 flex flex-col gap-6 box-border overflow-hidden"
       >
         <h1 className="text-3xl md:text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 mb-4">
           Post a New Gig
         </h1>
-        {error && <p className="text-red-500 text-center mb-2 font-medium">{error}</p>}
 
+        {error && (
+          <p className="text-red-500 text-center mb-2 font-medium">
+            {error}
+          </p>
+        )}
+
+        {/* Gig Title */}
         <input
           type="text"
           placeholder="Gig Title (e.g. Build a React Website)"
           value={gig.title}
           onChange={(e) => setGig({ ...gig, title: e.target.value })}
-          className="w-full h-14 px-5 rounded-xl border border-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm hover:shadow-md transition-all duration-200"
+          className="w-full h-14 px-5 rounded-xl border border-purple-300 box-border
+          focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+          shadow-sm hover:shadow-md transition-all duration-200"
         />
+
+        {/* Description */}
         <textarea
           placeholder="Describe the gig requirements"
           rows={5}
           value={gig.description}
           onChange={(e) => setGig({ ...gig, description: e.target.value })}
-          className="w-full px-5 py-4 rounded-xl border border-purple-300 focus:ring-2 focus:ring-purple-500 resize-none focus:border-purple-500 shadow-sm hover:shadow-md transition-all duration-200"
+          className="w-full px-5 py-4 rounded-xl border border-purple-300 box-border
+          focus:ring-2 focus:ring-purple-500 resize-none focus:border-purple-500
+          shadow-sm hover:shadow-md transition-all duration-200"
         />
+
+        {/* Budget */}
         <input
           type="number"
           placeholder="Budget (₹)"
           value={gig.budget}
           onChange={(e) => setGig({ ...gig, budget: e.target.value })}
-          className="w-full h-14 px-5 rounded-xl border border-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm hover:shadow-md transition-all duration-200"
+          className="w-full h-14 px-5 rounded-xl border border-purple-300 box-border
+          focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+          shadow-sm hover:shadow-md transition-all duration-200"
         />
+
+        {/* Submit Button */}
         <button
           onClick={submit}
           disabled={loading}
-          className={`w-full h-14 rounded-xl text-white font-bold text-lg transition-all duration-200 ${
+          className={`w-full h-14 rounded-xl text-white font-bold text-lg transition-all duration-200 box-border ${
             loading
               ? "bg-purple-300 cursor-not-allowed"
               : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 hover:shadow-lg"
